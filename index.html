@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+    <title>TodoList CDN Vue LocalStorage</title>
+</head>
+<body>
+ 
+    <div id="app">
+
+        <div class="container m-auto w-full flex text-xl p-4 flex-col items-center">
+            <div class="insertar mb-2">
+                <input 
+                placeholder="Insertar tarea..." 
+                class="border border-blue-500 p-1 rounded" 
+                type="text"
+                v-model="task" >
+                <button 
+                class="bg-blue-500 p-1 rounded text-white"
+                @click="insertarTask()">Añadir</button>
+            </div>
+
+            <ul class="w-full">
+                <li v-for='(todo, index) in todos' :key="todo.id" class="mt-2 h-auto h-full bg-gray-100 p-2">
+                    <span 
+                    :contenteditable="editing === index" 
+                    :ref="`span-${index}`" 
+                    @blur="saveTask(index)"
+                    >{{todo.title}}</span>
+                    <div class="inline float-right">
+                        <button @click="editing === index ? saveTask(index) : editTask(index)"
+                        class="px-1 border rounded bg-blue-500 text-white ml-1">{{editing === index ? 'Guardar' : 'Editar'}}</button>
+                        <button @click="delateTask(index)" 
+                        class="px-1 border rounded bg-red-500 text-white ml-1">Eliminar</button>
+                    </div>
+                </li>
+
+            </ul>
+        </div>
+
+    </div>
+
+    <script type="module">
+        import Vue from 'https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.esm.browser.js'
+
+    new Vue({
+        el: '#app',
+        data() {
+            return{
+                todos: [
+                    {id: 1, title: 'Tarea Nro 1'},
+                    {id: 2, title: 'Tarea Nro 2'},
+                    {id: 3, title: 'Tarea Nro 3'},
+                ],
+                task: '',
+                editing: null,
+                
+            }
+        },
+        methods: {
+            insertarTask(){
+                this.todos.push({
+                    id: this.todos.length + 1,
+                    title: this.task
+                })
+                this.saveLocalStorage()
+
+                this.task = ""
+            },
+            delateTask(index){
+                this.todos.splice(index, 1)
+                this.saveLocalStorage()
+            },
+            editTask(index){
+                this.editing = index
+                const span = this.$refs[`span-${index}`][0]
+                span.focus()
+                span.classList.add("bg-red-200")
+            },
+            saveTask(index){
+                const span = this.$refs[`span-${index}`][0];
+                span.classList.remove("bg-red-200")
+                this.editing = null
+                this.todos[index].title = span.innerHTML
+                this.saveLocalStorage()
+            },
+            saveLocalStorage(){
+                window.localStorage.setItem("todos", JSON.stringify(this.todos))
+            }
+        },
+        mounted() {
+            this.todos = JSON.parse(window.localStorage.getItem("todos"))
+        },
+    })
+    </script>
+    
+    
+</body>
+</html>
